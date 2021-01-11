@@ -1,5 +1,7 @@
 module MaxwellGuide
 
-# Write your package code here.
+using Reexport
+@reexport using MaxwellBase
+using AbbreviatedTypes
 
 end
