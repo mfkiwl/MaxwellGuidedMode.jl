@@ -1,0 +1,13 @@
+name = "MaxwellGuide"
+uuid = "1a361701-5cf3-415b-af48-956f67dbd5f6"
+authors = ["Wonseok Shin <wsshin97@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
