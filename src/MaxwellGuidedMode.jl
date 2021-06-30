@@ -1,4 +1,4 @@
-module MaxwellGuide
+module MaxwellGuidedMode
 
 using Reexport
 @reexport using MaxwellBase

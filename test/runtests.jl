@@ -1,6 +1,6 @@
-using MaxwellGuide
+using MaxwellGuidedMode
 using Test
 
-@testset "MaxwellGuide.jl" begin
+@testset "MaxwellGuidedMode.jl" begin
     # Write your tests here.
 end
