@@ -214,8 +214,8 @@ function create_if′ₗ_from_fₜ(ft::FieldType, ω::Number,
     return L
 end
 
-create_ihₗ_from_eₜ(ω, Pₗs, Cₜs) = create_f′ₗ_from_fₜ(EE, ω, Pₗs, Cₜs)
-create_ieₗ_from_hₜ(ω, Pₗs, Cₜs) = create_f′ₗ_from_fₜ(HH, ω, Pₗs, Cₜs)
+create_ihₗ_from_eₜ(ω, Pₗs, Cₜs) = create_if′ₗ_from_fₜ(EE, ω, Pₗs, Cₜs)
+create_ieₗ_from_hₜ(ω, Pₗs, Cₜs) = create_if′ₗ_from_fₜ(HH, ω, Pₗs, Cₜs)
 
 function create_βf′ₜ_from_fₜ(ft::FieldType, ω::Number,
                              Ps::Tuple22{AbsMatNumber},
