@@ -2,8 +2,8 @@ export set_ωpml!, set_boundft!, set_Npml!, set_kbloch!  # basic setter function
 export create_e⁻ⁱᵏᴸ
 export clear_objs!  # plural because clearing both electric and magnetic quantities
 export create_paramops, create_curls, create_πcmps
-export create_if′ₗ_from_fₜ, create_ihₗ_from_eₜ, create_ieₗ_from_hₜ
-export create_βf′ₜ_from_fₜ, create_βhₜ_from_eₜ, create_βeₜ_from_hₜ
+export create_iF′ₗgen, create_iHₗgen, create_iEₗgen
+export create_βF′ₜgen, create_βHₜgen, create_βEₜgen
 export create_A
 
 # Do not export Model; quality it with the package name MaxwellFDFD, because I would have
@@ -198,9 +198,12 @@ function create_πcmps(mdl::Model{K}) where {K}
     return πcmpₑ, πcmpₘ
 end
 
-function create_if′ₗ_from_fₜ(ft::FieldType, ω::Number,
-                             Pₗs::Tuple2{AbsMatNumber},
-                             Cₜs::Tuple2{AbsMatNumber})
+# Create the operator that generates im * F′ₗ from Fₜ, where F′ is the field complementary
+# to F (e.g., F′ = H-field for F = E-field).
+function create_iF′ₗgen(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
+                        ω::Number,
+                        Pₗs::Tuple2{AbsMatNumber},
+                        Cₜs::Tuple2{AbsMatNumber})
     nft = Int(ft)
     nft′ = alter(nft)
 
@@ -214,13 +217,16 @@ function create_if′ₗ_from_fₜ(ft::FieldType, ω::Number,
     return L
 end
 
-create_ihₗ_from_eₜ(ω, Pₗs, Cₜs) = create_if′ₗ_from_fₜ(EE, ω, Pₗs, Cₜs)
-create_ieₗ_from_hₜ(ω, Pₗs, Cₜs) = create_if′ₗ_from_fₜ(HH, ω, Pₗs, Cₜs)
+create_iHₗgen(ω, Pₗs, Cₜs) = create_iF′ₗgen(EE, ω, Pₗs, Cₜs)
+create_iEₗgen(ω, Pₗs, Cₜs) = create_iF′ₗgen(HH, ω, Pₗs, Cₜs)
 
-function create_βf′ₜ_from_fₜ(ft::FieldType, ω::Number,
-                             Ps::Tuple22{AbsMatNumber},
-                             Cs::Tuple22{AbsMatNumber},
-                             πcmps::Tuple2{AbsMatNumber})
+# Create the operator that generates β * F′ₜ, where F′ is the field complementary to F (e.g.,
+# F′ = H-field for F = E-field).
+function create_βF′ₜgen(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
+                        ω::Number,
+                        Ps::Tuple22{AbsMatNumber},
+                        Cs::Tuple22{AbsMatNumber},
+                        πcmps::Tuple2{AbsMatNumber})
     nft = Int(ft)
     nft′ = alter(nft)
 
@@ -231,32 +237,32 @@ function create_βf′ₜ_from_fₜ(ft::FieldType, ω::Number,
 
     Pₜ = Pₜs[nft]
     C′ₗ = Cₗs[nft′]
-
     πcmp = πcmps[nft]
 
-    T = α .* Pₜ
+    βF′ₜgen = α .* Pₜ
 
     if length(Pₗs[nft′]) > 0
-        L = create_if′ₗ_from_fₜ(ft, ω, Pₗs, Cₜs)
-        T += C′ₗ * L
+        iF′ₗgen = create_iF′ₗgen(ft, ω, Pₗs, Cₜs)
+        βF′ₜgen += C′ₗ * iF′ₗgen
     end
-    T = πcmp * T
+    βF′ₜgen = πcmp * βF′ₜgen
 
-    return T
+    return βF′ₜgen
 end
 
-create_βhₜ_from_eₜ(ω, Ps, Cs, πcmps) = create_∂ₗf′ₜ_from_fₜ(EE, ω, Ps, Cs, πcmps)
-create_βeₜ_from_hₜ(ω, Ps, Cs, πcmps) = create_∂ₗf′ₜ_from_fₜ(HH, ω, Ps, Cs, πcmps)
+create_βHₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(EE, ω, Ps, Cs, πcmps)
+create_βEₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(HH, ω, Ps, Cs, πcmps)
 
-function create_A(ft::FieldType, ω::Number,
+function create_A(ft::FieldType,  # type of input field Fₜ
+                  ω::Number,
                   Ps::Tuple22{AbsMatNumber},
                   Cs::Tuple22{AbsMatNumber},
                   πcmps::Tuple2{AbsMatNumber})
     ft′ = alter(ft)
-    βf′_from_f = create_βf′ₜ_from_fₜ(ft, ω, Ps, Cs, πcmps)
-    βf_from_f′ = create_βf′ₜ_from_fₜ(ft′, ω, Ps, Cs, πcmps)
+    βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
+    βFₜgen = create_βF′ₜgen(ft′, ω, Ps, Cs, πcmps)
 
-    A = βf_from_f′ * βf′_from_f
+    A = βFₜgen * βF′ₜgen
 
     return A
 end
