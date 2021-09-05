@@ -220,13 +220,12 @@ end
 create_iHₗgen(ω, Pₗs, Cₜs) = create_iF′ₗgen(EE, ω, Pₗs, Cₜs)
 create_iEₗgen(ω, Pₗs, Cₜs) = create_iF′ₗgen(HH, ω, Pₗs, Cₜs)
 
-# Create the operator that generates β * F′ₜ, where F′ is the field complementary to F (e.g.,
-# F′ = H-field for F = E-field).
-function create_βF′ₜgen(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
-                        ω::Number,
-                        Ps::Tuple22{AbsMatNumber},
-                        Cs::Tuple22{AbsMatNumber},
-                        πcmps::Tuple2{AbsMatNumber})
+
+function create_βF′ₜgen_comps(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
+                              ω::Number,
+                              Ps::Tuple22{AbsMatNumber},
+                              Cs::Tuple22{AbsMatNumber},
+                              πcmps::Tuple2{AbsMatNumber})
     nft = Int(ft)
     nft′ = alter(nft)
 
@@ -239,16 +238,22 @@ function create_βF′ₜgen(ft::FieldType,  # type of input field Fₜ, not out
     C′ₗ = Cₗs[nft′]
     πcmp = πcmps[nft]
 
-    βF′ₜgen = α .* Pₜ
+    βF′ₜgen₁ = (α .* πcmp) * Pₜ
 
     if length(Pₗs[nft′]) > 0
         iF′ₗgen = create_iF′ₗgen(ft, ω, Pₗs, Cₜs)
-        βF′ₜgen += C′ₗ * iF′ₗgen
+        βF′ₜgen₂ = (πcmp * C′ₗ) * iF′ₗgen
+    else
+        βF′ₜgen₂ = spzeros(eltype(βF′ₜgen₁), size(βF′ₜgen₁)...)
     end
-    βF′ₜgen = πcmp * βF′ₜgen
 
-    return βF′ₜgen
+    return βF′ₜgen₁, βF′ₜgen₂
 end
+
+
+# Create the operator that generates β * F′ₜ, where F′ is the field complementary to F (e.g.,
+# F′ = H-field for F = E-field).
+create_βF′ₜgen(ft, ω, Ps, Cs, πcmps) = sum(create_βF′ₜgen_comps(ft, ω, Ps, Cs, πcmps))
 
 create_βHₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(EE, ω, Ps, Cs, πcmps)
 create_βEₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(HH, ω, Ps, Cs, πcmps)
@@ -259,10 +264,18 @@ function create_A(ft::FieldType,  # type of input field Fₜ
                   Cs::Tuple22{AbsMatNumber},
                   πcmps::Tuple2{AbsMatNumber})
     ft′ = alter(ft)
-    βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
-    βFₜgen = create_βF′ₜgen(ft′, ω, Ps, Cs, πcmps)
 
-    A = βFₜgen * βF′ₜgen
+    # Old implementation.  Though more straightforward, this implementation does not
+    # gurantee the vector calculus identity βFₜgen₂ * βF′ₜgen₂ = 0 due to rounding errors.
+    #
+    # βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
+    # βFₜgen = create_βF′ₜgen(ft′, ω, Ps, Cs, πcmps)
+    # A = βFₜgen * βF′ₜgen
+
+    βF′ₜgen₁, βF′ₜgen₂ = create_βF′ₜgen_comps(ft, ω, Ps, Cs, πcmps)
+    βFₜgen₁, βFₜgen₂ = create_βF′ₜgen_comps(ft′, ω, Ps, Cs, πcmps)
+
+    A = βFₜgen₁ * βF′ₜgen₁ + βFₜgen₁ * βF′ₜgen₂ + βFₜgen₂ * βF′ₜgen₁  # βFₜgen₂ * βF′ₜgen₂ = 0 always
 
     return A
 end
