@@ -198,6 +198,12 @@ function create_πcmps(mdl::Model{K}) where {K}
     return πcmpₑ, πcmpₘ
 end
 
+create_iHₗgen(ω, Ps::Tuple22{AbsMatNumber}, Cs::Tuple22{AbsMatNumber}) = create_iF′ₗgen(EE, ω, Ps, Cs)
+create_iEₗgen(ω, Ps::Tuple22{AbsMatNumber}, Cs::Tuple22{AbsMatNumber}) = create_iF′ₗgen(HH, ω, Ps, Cs)
+
+create_iF′ₗgen(ft, ω, Ps::Tuple22{AbsMatNumber}, Cs::Tuple22{AbsMatNumber}) =
+    create_iF′ₗgen(ft, ω, Ps[2], Cs[1])
+
 # Create the operator that generates im * F′ₗ from Fₜ, where F′ is the field complementary
 # to F (e.g., F′ = H-field for F = E-field).
 function create_iF′ₗgen(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
@@ -217,9 +223,13 @@ function create_iF′ₗgen(ft::FieldType,  # type of input field Fₜ, not outp
     return L
 end
 
-create_iHₗgen(ω, Pₗs, Cₜs) = create_iF′ₗgen(EE, ω, Pₗs, Cₜs)
-create_iEₗgen(ω, Pₗs, Cₜs) = create_iF′ₗgen(HH, ω, Pₗs, Cₜs)
 
+create_βHₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(EE, ω, Ps, Cs, πcmps)
+create_βEₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(HH, ω, Ps, Cs, πcmps)
+
+# Create the operator that generates β * F′ₜ, where F′ is the field complementary to F (e.g.,
+# F′ = H-field for F = E-field).
+create_βF′ₜgen(ft, ω, Ps, Cs, πcmps) = sum(create_βF′ₜgen_comps(ft, ω, Ps, Cs, πcmps))
 
 function create_βF′ₜgen_comps(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
                               ω::Number,
@@ -249,14 +259,6 @@ function create_βF′ₜgen_comps(ft::FieldType,  # type of input field Fₜ, n
 
     return βF′ₜgen₁, βF′ₜgen₂
 end
-
-
-# Create the operator that generates β * F′ₜ, where F′ is the field complementary to F (e.g.,
-# F′ = H-field for F = E-field).
-create_βF′ₜgen(ft, ω, Ps, Cs, πcmps) = sum(create_βF′ₜgen_comps(ft, ω, Ps, Cs, πcmps))
-
-create_βHₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(EE, ω, Ps, Cs, πcmps)
-create_βEₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(HH, ω, Ps, Cs, πcmps)
 
 function create_A(ft::FieldType,  # type of input field Fₜ
                   ω::Number,
