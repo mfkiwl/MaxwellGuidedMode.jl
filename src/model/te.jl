@@ -96,3 +96,30 @@ function calc_matparams!(mdl::ModelTE)
 
     return nothing
 end
+
+function complete_fields(β::Number,  # propagation constant
+                         fₜ::AbsVecNumber,  # calculated transverse field Fₜ as column vector
+                         ft::FieldType,  # type of input field Fₜ
+                         ω::Number,
+                         Ps::Tuple22{AbsMatNumber},
+                         Cs::Tuple22{AbsMatNumber},
+                         πcmps::Tuple2{AbsMatNumber},
+                         mdl::ModelTE)
+    # Calculate the transverse components of the complementary field.
+    βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
+    f′ₜ = (βF′ₜgen * fₜ) ./ β
+
+    eₜ, hₜ = ft==EE ? (fₜ,f′ₜ) : (f′ₜ,fₜ)
+
+    # Calculate the longitudinal component of the H-field.
+    iHₗgen = create_iHₗgen(ω, Ps, Cs)
+    hₗ = (iHₗgen * eₜ) ./ im
+
+    # Take the Cartesian components of the fields and reshape them into arrays.
+    sz_grid = size(mdl.grid)
+    Ey = reshape(eₜ, sz_grid)
+    Hx = reshape(hₜ, sz_grid)
+    Hz = reshape(hₗ, sz_grid)
+
+    return Ey, (Hx, Hz)
+end

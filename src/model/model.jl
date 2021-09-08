@@ -5,6 +5,7 @@ export create_paramops, create_curls, create_πcmps
 export create_iF′ₗgen, create_iHₗgen, create_iEₗgen
 export create_βF′ₜgen, create_βHₜgen, create_βEₜgen
 export create_A
+export complete_fields
 
 # Do not export Model; quality it with the package name MaxwellFDFD, because I would have
 # similar types in other packages such as MaxwellSALT and MaxwellGuide.
@@ -281,6 +282,10 @@ function create_A(ft::FieldType,  # type of input field Fₜ
 
     return A
 end
+
+# Implement the following functions for each specific Model.
+function calc_matparams! end
+function complete_fields end
 
 include("full.jl")
 include("te.jl")

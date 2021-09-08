@@ -4,7 +4,7 @@
 # The type parameter AK₊₂ specify device-specific arrays types (e.g., CuArray) and is
 # user-defined in the constructor.
 #
-# Note that the TM mode has (Hy, Ex, Ez) as nonzero components; this is unlike TM Maxwell's
+# Note that the TM mode has (Ex, Ez, Hy) as nonzero components; this is unlike TM Maxwell's
 # equations that have two H-field components and one E-field component.
 
 const ModelTM{AK₊₂} = Model{1,2,1, 1,1, 1,0, 1, 3,AK₊₂}
@@ -95,4 +95,31 @@ function calc_matparams!(mdl::ModelTM)
     smooth_param!(εₗarr, tuple(pₗ_oind2d), oind2shp, oind2εind, εind2εₗ, gₑ, l, lg, σ, ∆τ, iseₗ˔shp)  # εₗ tensors (rank-0, so scalars)
 
     return nothing
+end
+
+function complete_fields(β::Number,  # propagation constant
+                         fₜ::AbsVecNumber,  # calculated transverse field Fₜ as column vector
+                         ft::FieldType,  # type of input field Fₜ
+                         ω::Number,
+                         Ps::Tuple22{AbsMatNumber},
+                         Cs::Tuple22{AbsMatNumber},
+                         πcmps::Tuple2{AbsMatNumber},
+                         mdl::ModelTM)
+    # Calculate the transverse components of the complementary field.
+    βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
+    f′ₜ = (βF′ₜgen * fₜ) ./ β
+
+    eₜ, hₜ = ft==EE ? (fₜ,f′ₜ) : (f′ₜ,fₜ)
+
+    # Calculate the longitudinal component of the E-field.
+    iEₗgen = create_iEₗgen(ω, Ps, Cs)
+    eₗ = (iEₗgen * hₜ) ./ im
+
+    # Take the Cartesian components of the fields and reshape them into arrays.
+    sz_grid = size(mdl.grid)
+    Ex = reshape(eₜ, sz_grid)
+    Ez = reshape(eₗ, sz_grid)
+    Hy = reshape(hₜ, sz_grid)
+
+    return (Ex, Ez), Hy
 end

@@ -108,3 +108,53 @@ function calc_matparams!(mdl::ModelFull)
 
     return nothing
 end
+
+function complete_fields(β::Number,  # propagation constant
+                         fₜ::AbsVecNumber,  # calculated transverse field Fₜ as column vector
+                         ft::FieldType,  # type of input field Fₜ
+                         ω::Number,
+                         Ps::Tuple22{AbsMatNumber},
+                         Cs::Tuple22{AbsMatNumber},
+                         πcmps::Tuple2{AbsMatNumber},
+                         mdl::ModelFull)
+    ft′ = alter(ft)
+
+    # Calculate the transverse components of the complementary field.
+    βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
+    f′ₜ = (βF′ₜgen * fₜ) ./ β
+
+    # Calculate the longitudinal components of the main and complementary fields.
+    iF′ₗgen = create_iF′ₗgen(ft, ω, Ps, Cs)
+    iFₗgen = create_iF′ₗgen(ft′, ω, Ps, Cs)
+
+    fₗ = (iFₗgen * f′ₜ) ./ im
+    f′ₗ = (iF′ₗgen * fₜ) ./ im
+
+    # Take the Cartesian components of the fields and reshape them into arrays.
+    sz = size(mdl, ft)
+    sz′ = size(mdl, ft′)
+    @assert sz′ == sz
+
+    fₜ = reshape(fₜ, sz)
+    f′ₜ = reshape(f′ₜ, sz)
+
+    order_cmpfirst = mdl.order_cmpfirst
+    d = order_cmpfirst ? 1 : length(sz)
+
+    Fx = selectdim(fₜ, d, 1)
+    Fy = selectdim(fₜ, d, 2)
+
+    F′x = selectdim(f′ₜ, d, 1)
+    F′y = selectdim(f′ₜ, d, 2)
+
+    sz_grid = size(mdl.grid)
+    Fz = reshape(fₗ, sz_grid)
+    F′z = reshape(f′ₗ, sz_grid)
+
+    F = (Fx, Fy, Fz)
+    F′ = (F′x, F′y, F′z)
+
+    E, H = ft==EE ? (F,F′) : (F′,F)
+
+    return E, H
+end
