@@ -19,8 +19,8 @@ function ModelTE(grid::Grid; Atype::Type=Array)
     cmpₑₗ = SInt()  # longitudinal E-field (no component)
     cmpₘₗ = SInt(3)  # longitudinal H-field (z-component)
 
-    iseₜ˔shp=true
-    ishₜ˔shp=false
+    iseₜ˔shp = true
+    ishₜ˔shp = false
 
     return ModelTE{Atype{ComplexF,3}}(;grid, cmpₛ, cmpₑₜ, cmpₘₜ, cmpₑₗ, cmpₘₗ, iseₜ˔shp, ishₜ˔shp)
 end

@@ -19,8 +19,8 @@ function ModelTM(grid::Grid; Atype::Type=Array)
     cmpₑₗ = SInt(3)  # longitudinal E-field (no component)
     cmpₘₗ = SInt()  # longitudinal H-field (z-component)
 
-    iseₜ˔shp=false
-    ishₜ˔shp=true
+    iseₜ˔shp = false
+    ishₜ˔shp = true
 
     return ModelTM{Atype{ComplexF,3}}(;grid, cmpₛ, cmpₑₜ, cmpₘₜ, cmpₑₗ, cmpₘₗ, iseₜ˔shp, ishₜ˔shp)
 end

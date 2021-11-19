@@ -15,8 +15,8 @@ function ModelFull(grid::Grid; Atype::Type=Array)
     cmpₑₗ = SInt(3)  # longitudinal E-field (z-component)
     cmpₘₗ = SInt(3)  # longitudinal H-field (z-component)
 
-    iseₜ˔shp=false
-    ishₜ˔shp=false
+    iseₜ˔shp = false
+    ishₜ˔shp = false
 
     return ModelFull{Atype{ComplexF,4}}(;grid, cmpₛ, cmpₑₜ, cmpₘₜ, cmpₑₗ, cmpₘₗ, iseₜ˔shp, ishₜ˔shp)
 end
