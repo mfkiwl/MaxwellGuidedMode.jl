@@ -114,18 +114,18 @@ function complete_fields(β::Number,  # propagation constant
                          ft::FieldType,  # type of input field Fₜ
                          ω::Number,
                          Ps::Tuple22{AbsMatNumber},
-                         Cs::Tuple22{AbsMatNumber},
+                         ∇̽s::Tuple22{AbsMatNumber},
                          πcmps::Tuple2{AbsMatNumber},
                          mdl::ModelFull)
     ft′ = alter(ft)
 
     # Calculate the transverse components of the complementary field.
-    βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
+    βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, ∇̽s, πcmps)
     f′ₜ = (βF′ₜgen * fₜ) ./ β
 
     # Calculate the longitudinal components of the main and complementary fields.
-    iF′ₗgen = create_iF′ₗgen(ft, ω, Ps, Cs)
-    iFₗgen = create_iF′ₗgen(ft′, ω, Ps, Cs)
+    iF′ₗgen = create_iF′ₗgen(ft, ω, Ps, ∇̽s)
+    iFₗgen = create_iF′ₗgen(ft′, ω, Ps, ∇̽s)
 
     fₗ = (iFₗgen * f′ₜ) ./ im
     f′ₗ = (iF′ₗgen * fₜ) ./ im

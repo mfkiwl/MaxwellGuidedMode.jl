@@ -177,13 +177,13 @@ function create_curls(mdl::Model)
 
     # The following lines work even if the model does not deal with the corresponding
     # longitudinal components.
-    Cₑₜ = create_curl(isfwdₑ, s∆lₘ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₘₗ, cmp_in=cmpₑₜ, mdl.order_cmpfirst)
-    Cₘₜ = create_curl(isfwdₘ, s∆lₑ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₑₗ, cmp_in=cmpₘₜ, mdl.order_cmpfirst)
+    ∇̽ₑₜ = create_curl(isfwdₑ, s∆lₘ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₘₗ, cmp_in=cmpₑₜ, mdl.order_cmpfirst)
+    ∇̽ₘₜ = create_curl(isfwdₘ, s∆lₑ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₑₗ, cmp_in=cmpₘₜ, mdl.order_cmpfirst)
 
-    Cₑₗ = create_curl(isfwdₑ, s∆lₘ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₘₜ, cmp_in=cmpₑₗ, mdl.order_cmpfirst)
-    Cₘₗ = create_curl(isfwdₘ, s∆lₑ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₑₜ, cmp_in=cmpₘₗ, mdl.order_cmpfirst)
+    ∇̽ₑₗ = create_curl(isfwdₑ, s∆lₘ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₘₜ, cmp_in=cmpₑₗ, mdl.order_cmpfirst)
+    ∇̽ₘₗ = create_curl(isfwdₘ, s∆lₑ⁻¹, isbloch, e⁻ⁱᵏᴸ; cmp_shp=cmpₛ, cmp_out=cmpₑₜ, cmp_in=cmpₘₗ, mdl.order_cmpfirst)
 
-    return (Cₑₜ,Cₘₜ), (Cₑₗ,Cₘₗ)
+    return (∇̽ₑₜ,∇̽ₘₜ), (∇̽ₑₗ,∇̽ₘₗ)
 end
 
 function create_πcmps(mdl::Model{K}) where {K}
@@ -199,43 +199,43 @@ function create_πcmps(mdl::Model{K}) where {K}
     return πcmpₑ, πcmpₘ
 end
 
-create_iHₗgen(ω, Ps::Tuple22{AbsMatNumber}, Cs::Tuple22{AbsMatNumber}) = create_iF′ₗgen(EE, ω, Ps, Cs)
-create_iEₗgen(ω, Ps::Tuple22{AbsMatNumber}, Cs::Tuple22{AbsMatNumber}) = create_iF′ₗgen(HH, ω, Ps, Cs)
+create_iHₗgen(ω, Ps::Tuple22{AbsMatNumber}, ∇̽s::Tuple22{AbsMatNumber}) = create_iF′ₗgen(EE, ω, Ps, ∇̽s)
+create_iEₗgen(ω, Ps::Tuple22{AbsMatNumber}, ∇̽s::Tuple22{AbsMatNumber}) = create_iF′ₗgen(HH, ω, Ps, ∇̽s)
 
-create_iF′ₗgen(ft, ω, Ps::Tuple22{AbsMatNumber}, Cs::Tuple22{AbsMatNumber}) =
-    create_iF′ₗgen(ft, ω, Ps[2], Cs[1])
+create_iF′ₗgen(ft, ω, Ps::Tuple22{AbsMatNumber}, ∇̽s::Tuple22{AbsMatNumber}) =
+    create_iF′ₗgen(ft, ω, Ps[2], ∇̽s[1])
 
 # Create the operator that generates im * F′ₗ from Fₜ, where F′ is the field complementary
 # to F (e.g., F′ = H-field for F = E-field).
 function create_iF′ₗgen(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
                         ω::Number,
                         Pₗs::Tuple2{AbsMatNumber},
-                        Cₜs::Tuple2{AbsMatNumber})
+                        ∇̽ₜs::Tuple2{AbsMatNumber})
     nft = Int(ft)
     nft′ = alter(nft)
 
     α = ft==EE ? -1/ω : 1/ω
 
     P′ₗ = Pₗs[nft′]
-    Cₜ = Cₜs[nft]
+    ∇̽ₜ = ∇̽ₜs[nft]
 
-    L = α .* (P′ₗ \ Cₜ)
+    L = α .* (P′ₗ \ ∇̽ₜ)
 
     return L
 end
 
 
-create_βHₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(EE, ω, Ps, Cs, πcmps)
-create_βEₜgen(ω, Ps, Cs, πcmps) = create_βF′ₜgen(HH, ω, Ps, Cs, πcmps)
+create_βHₜgen(ω, Ps, ∇̽s, πcmps) = create_βF′ₜgen(EE, ω, Ps, ∇̽s, πcmps)
+create_βEₜgen(ω, Ps, ∇̽s, πcmps) = create_βF′ₜgen(HH, ω, Ps, ∇̽s, πcmps)
 
 # Create the operator that generates β * F′ₜ, where F′ is the field complementary to F (e.g.,
 # F′ = H-field for F = E-field).
-create_βF′ₜgen(ft, ω, Ps, Cs, πcmps) = sum(create_βF′ₜgen_comps(ft, ω, Ps, Cs, πcmps))
+create_βF′ₜgen(ft, ω, Ps, ∇̽s, πcmps) = sum(create_βF′ₜgen_comps(ft, ω, Ps, ∇̽s, πcmps))
 
 function create_βF′ₜgen_comps(ft::FieldType,  # type of input field Fₜ, not output field F′ₗ
                               ω::Number,
                               Ps::Tuple22{AbsMatNumber},
-                              Cs::Tuple22{AbsMatNumber},
+                              ∇̽s::Tuple22{AbsMatNumber},
                               πcmps::Tuple2{AbsMatNumber})
     nft = Int(ft)
     nft′ = alter(nft)
@@ -243,17 +243,17 @@ function create_βF′ₜgen_comps(ft::FieldType,  # type of input field Fₜ, n
     α = ft==EE ? ω : -ω
 
     Pₜs, Pₗs = Ps
-    Cₜs, Cₗs = Cs
+    ∇̽ₜs, ∇̽ₗs = ∇̽s
 
     Pₜ = Pₜs[nft]
-    C′ₗ = Cₗs[nft′]
+    ∇̽′ₗ = ∇̽ₗs[nft′]
     πcmp = πcmps[nft]
 
     βF′ₜgen₁ = (α .* πcmp) * Pₜ
 
     if length(Pₗs[nft′]) > 0
-        iF′ₗgen = create_iF′ₗgen(ft, ω, Pₗs, Cₜs)
-        βF′ₜgen₂ = (πcmp * C′ₗ) * iF′ₗgen
+        iF′ₗgen = create_iF′ₗgen(ft, ω, Pₗs, ∇̽ₜs)
+        βF′ₜgen₂ = (πcmp * ∇̽′ₗ) * iF′ₗgen
     else
         βF′ₜgen₂ = spzeros(eltype(βF′ₜgen₁), size(βF′ₜgen₁)...)
     end
@@ -264,19 +264,19 @@ end
 function create_A(ft::FieldType,  # type of input field Fₜ
                   ω::Number,
                   Ps::Tuple22{AbsMatNumber},
-                  Cs::Tuple22{AbsMatNumber},
+                  ∇̽s::Tuple22{AbsMatNumber},
                   πcmps::Tuple2{AbsMatNumber})
     ft′ = alter(ft)
 
     # Old implementation.  Though more straightforward, this implementation does not
     # gurantee the vector calculus identity βFₜgen₂ * βF′ₜgen₂ = 0 due to rounding errors.
     #
-    # βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, Cs, πcmps)
-    # βFₜgen = create_βF′ₜgen(ft′, ω, Ps, Cs, πcmps)
+    # βF′ₜgen = create_βF′ₜgen(ft, ω, Ps, ∇̽s, πcmps)
+    # βFₜgen = create_βF′ₜgen(ft′, ω, Ps, ∇̽s, πcmps)
     # A = βFₜgen * βF′ₜgen
 
-    βF′ₜgen₁, βF′ₜgen₂ = create_βF′ₜgen_comps(ft, ω, Ps, Cs, πcmps)
-    βFₜgen₁, βFₜgen₂ = create_βF′ₜgen_comps(ft′, ω, Ps, Cs, πcmps)
+    βF′ₜgen₁, βF′ₜgen₂ = create_βF′ₜgen_comps(ft, ω, Ps, ∇̽s, πcmps)
+    βFₜgen₁, βFₜgen₂ = create_βF′ₜgen_comps(ft′, ω, Ps, ∇̽s, πcmps)
 
     A = βFₜgen₁ * βF′ₜgen₁ + βFₜgen₁ * βF′ₜgen₂ + βFₜgen₂ * βF′ₜgen₁  # βFₜgen₂ * βF′ₜgen₂ = 0 always
 
