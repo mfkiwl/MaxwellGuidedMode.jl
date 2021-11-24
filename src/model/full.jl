@@ -158,3 +158,43 @@ function complete_fields(β::Number,  # propagation constant
 
     return E, H
 end
+
+function poynting(E::Tuple3{AbsMatNumber},  # (Ex, Ey, Ez)
+                  H::Tuple3{AbsMatNumber},  # (Hx, Hy, Hz)
+                  mdl::ModelFull)
+    boundft = mdl.boundft
+    grid = mdl.grid
+    isbloch = grid.isbloch
+
+    ∆lₑ, ∆lₘ, ∆lₑ⁻¹, ∆lₘ⁻¹ = create_∆ls(grid, boundft)
+
+    Ex, Ey, Ez = E
+    Hx, Hy, Hz = H
+
+    nX, nY = 1, 2
+
+    # Calculate Sx.
+    m̂xHz = MatComplexF(undef, size(grid))
+    isfwd = boundft[nX]==HH
+    apply_m̂!(m̂xHz, Hz, nX, isfwd, ∆lₘ[nX], ∆lₑ⁻¹[nX], isbloch[nX])
+    Sx = 0.5real.(Ey .* conj.(m̂xHz))
+
+    # Calculate Sy.
+    m̂yHz = MatComplexF(undef, size(grid))
+    isfwd = boundft[nY]==HH
+    apply_m̂!(m̂yHz, Hz, nY, isfwd, ∆lₘ[nY], ∆lₑ⁻¹[nY], isbloch[nY])
+    Sy = 0.5real.(Ex .* conj.(m̂yHz))
+
+    # Calculate Sz.
+    Sz = MatFloat(undef, size(grid))
+
+    Sz₊ = 0.5real.(Ex .* conj.(Hy))  # real array located at Ex
+    isfwd = boundft[nY]==EE
+    apply_m̂!(Sz, Sz₊, nY, isfwd, ∆lₑ[nY], ∆lₘ⁻¹[nY], isbloch[nY])
+
+    Sz₋ = 0.5real.(Ey .* conj.(Hx))  # real array located at Ey
+    isfwd = boundft[nX]==EE
+    apply_m̂!(Sz, Sz₋, nX, isfwd, ∆lₑ[nX], ∆lₘ⁻¹[nX], isbloch[nX], α=-1.0, overwrite=false)
+
+    return Sx, Sy, Sz
+end

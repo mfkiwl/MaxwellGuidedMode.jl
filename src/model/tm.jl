@@ -123,3 +123,29 @@ function complete_fields(β::Number,  # propagation constant
 
     return (Ex, Ez), Hy
 end
+
+function poynting(E::Tuple2{AbsVecNumber},  # (Ex, Ez)
+                  H::AbsVecNumber,  # Hy
+                  mdl::ModelTM)
+    boundft = mdl.boundft
+    grid = mdl.grid
+    isbloch = grid.isbloch
+
+    ∆lₑ, ∆lₘ, ∆lₑ⁻¹, ∆lₘ⁻¹ = create_∆ls(grid, boundft)
+
+    Ex, Ez = E
+    Hy = H
+
+    nX = 1
+
+    # Calculate Sx.
+    m̂xHy = VecComplexF(undef, size(grid))
+    isfwd = boundft[nX]==HH
+    apply_m̂!(m̂xHy, Hy, nX, isfwd, ∆lₘ[nX], ∆lₑ⁻¹[nX], isbloch[nX])
+    Sx = -0.5real.(Ez .* conj.(m̂xHy))
+
+    # Calculate Sz.
+    Sz = 0.5real.(Ex .* conj.(Hy))  # real array located at Ex
+
+    return Sx, Sz
+end
