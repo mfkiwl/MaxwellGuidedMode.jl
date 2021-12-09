@@ -156,7 +156,7 @@ function complete_fields(β::Number,  # propagation constant
 
     E, H = ft==EE ? (F,F′) : (F′,F)
 
-    return E, H
+    return (E=E, H=H)
 end
 
 function poynting(E::Tuple3{AbsMatNumber},  # (Ex, Ey, Ez)
