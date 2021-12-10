@@ -11,6 +11,8 @@ const ModelTE{AK₊₂} = Model{1,1,2, 1,1, 0,1, 1, 3,AK₊₂}
 
 # Convenience constructor
 function ModelTE(grid::Grid; Atype::Type=Array)
+    ft_eq = EE
+
     cmpₛ = SInt(1)  # shapes in transverse dimension (x-axis)
 
     cmpₑₜ = SInt(2)  # transverse E-field (y-component)
@@ -22,7 +24,7 @@ function ModelTE(grid::Grid; Atype::Type=Array)
     iseₜ˔shp = true
     ishₜ˔shp = false
 
-    return ModelTE{Atype{ComplexF,3}}(;grid, cmpₛ, cmpₑₜ, cmpₘₜ, cmpₑₗ, cmpₘₗ, iseₜ˔shp, ishₜ˔shp)
+    return ModelTE{Atype{ComplexF,3}}(;ft_eq, grid, cmpₛ, cmpₑₜ, cmpₘₜ, cmpₑₗ, cmpₘₗ, iseₜ˔shp, ishₜ˔shp)
 end
 
 # Assign the material parameters on the grid and smooth them.

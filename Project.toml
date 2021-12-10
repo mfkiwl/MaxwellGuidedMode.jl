@@ -7,11 +7,13 @@ version = "0.1.7"
 
 [deps]
 AbbreviatedTypes = "1766def0-c946-4dda-a59e-d0d07f8410f7"
+Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
 MaxwellBase = "7ddc1c72-b467-4b56-ac1e-188734e3cfa7"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
 AbbreviatedTypes = "^0.2.1"
+Arpack = "^0.5.3"
 MaxwellBase = "^0.1.10"
 Reexport = "^1.0.0"
 julia = "^1.7"

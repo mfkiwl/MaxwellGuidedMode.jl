@@ -5,7 +5,7 @@ export create_paramops, create_curls, create_πcmps
 export create_iF′ₗgen, create_iHₗgen, create_iEₗgen
 export create_βF′ₜgen, create_βHₜgen, create_βEₜgen
 export create_A
-export complete_fields
+export complete_fields, calc_mode
 export poynting
 
 # Do not export Model; quality it with the package name MaxwellFDFD, because I would have
@@ -16,6 +16,9 @@ Base.@kwdef mutable struct Model{K,Kₑ,Kₘ,
                                  K₊₂,AK₊₂<:AbsArrComplexF{K₊₂}}
     # Frequency
     ωpml::Number = 0.0  # can be complex
+
+    # Field type of equation
+    ft_eq::FieldType
 
     # Grid
     grid::Grid{K}
@@ -283,6 +286,27 @@ function create_A(ft::FieldType,  # type of input field Fₜ
 
     return A
 end
+
+function calc_mode(mdl::Model, ω::Real, βguess::Number)
+    ## Create the eigenequation and solve it.
+    Ps = create_paramops(mdl)
+    ∇̽s = create_curls(mdl)
+    πcmps = create_πcmps(mdl)
+
+    ft_eq = mdl.ft_eq
+    A = create_A(ft_eq, ω, Ps, ∇̽s, πcmps)
+
+    nev = 1
+    β², f = eigs(A; nev, sigma=βguess^2)
+
+    fₜ = f[:,nev]
+    β = .√β²[nev]
+
+    E, H = complete_fields(β, fₜ, ft_eq, ω, Ps, ∇̽s, πcmps, mdl)
+
+    return (β=β, E=E, H=H)
+end
+
 
 # Implement the following functions for each specific Model.
 function calc_matparams! end

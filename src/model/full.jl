@@ -7,6 +7,8 @@ const ModelFull{AK₊₂} = Model{2,3,3, 2,2, 1,1, 4, 4,AK₊₂}
 
 # Convenience constructor
 function ModelFull(grid::Grid; Atype::Type=Array)
+    ft_eq = EE
+
     cmpₛ = SInt(1,2)  # shapes in transverse dimension (xy-plane)
 
     cmpₑₜ = SInt(1,2)  # transverse E-field (x- and y-components)
@@ -18,7 +20,7 @@ function ModelFull(grid::Grid; Atype::Type=Array)
     iseₜ˔shp = false
     ishₜ˔shp = false
 
-    return ModelFull{Atype{ComplexF,4}}(;grid, cmpₛ, cmpₑₜ, cmpₘₜ, cmpₑₗ, cmpₘₗ, iseₜ˔shp, ishₜ˔shp)
+    return ModelFull{Atype{ComplexF,4}}(;ft_eq, grid, cmpₛ, cmpₑₜ, cmpₘₜ, cmpₑₗ, cmpₘₗ, iseₜ˔shp, ishₜ˔shp)
 end
 
 # Assign the material parameters on the grid and smooth them.
