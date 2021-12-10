@@ -42,8 +42,8 @@ function calc_matparams!(mdl::ModelTE)
     ∆τ = grid.ghosted.∆τ
 
     boundft = mdl.boundft
-    gₑ = ft2gt.(EE,boundft)
-    gₘ = ft2gt.(HH,boundft)
+    gtₑ = ft2gt.(EE,boundft)
+    gtₘ = ft2gt.(HH,boundft)
 
     εₜarr = mdl.εₜarr
     µₜarr = mdl.μₜarr
@@ -75,13 +75,13 @@ function calc_matparams!(mdl::ModelTE)
     pₗ_oind2d′ = create_oind_array(N)  # for @assert below
 
     # Assign the material parameters.
-    # Note that μₜarr uses gₑ rather than gₘ, because it is rank-0 tensor and its locations
+    # Note that μₜarr uses gtₑ rather than gtₘ, because it is rank-0 tensor and its locations
     # are the E-field locations; see the definition MaxwellBase/assign_param!().
     # (See the figure in L10 - Eigenmode Analysis > 1.3 Waveguide mode analysis > Matrix
     # equation formulation; take the cross section through Ey, Hx, Hz.)
-    assign_param!(εₜarr, tuple(pₗ_oind2d), oind2shp, oind2εind, εind2εₜ, gₑ, τl, isbloch)  # εₜ tensors (rank-0, so scalars)
-    assign_param!(µₜarr, tuple(pₗ_oind2d′), oind2shp, oind2μind, μind2μₜ, gₑ, τl, isbloch)  # μₜ tensors (rank-0, so scalars)
-    assign_param!(µₗarr, tuple(pₜ_oind2d), oind2shp, oind2μind, μind2μₗ, gₘ, τl, isbloch)  # μₗ tensors (rank-0, so scalars)
+    assign_param!(εₜarr, tuple(pₗ_oind2d), oind2shp, oind2εind, εind2εₜ, gtₑ, τl, isbloch)  # εₜ tensors (rank-0, so scalars)
+    assign_param!(µₜarr, tuple(pₗ_oind2d′), oind2shp, oind2μind, μind2μₜ, gtₑ, τl, isbloch)  # μₜ tensors (rank-0, so scalars)
+    assign_param!(µₗarr, tuple(pₜ_oind2d), oind2shp, oind2μind, μind2μₗ, gtₘ, τl, isbloch)  # μₗ tensors (rank-0, so scalars)
 
     # Some temporary arrays should be identical.  Specifically, εyy_oind2d and μxx_oind2d
     # are evaluated at the locations surrounding the εyy and μxx locations, which are the
@@ -92,9 +92,9 @@ function calc_matparams!(mdl::ModelTE)
     @assert isequal(pₗ_oind2d′, pₗ_oind2d)
 
     # Smooth the material parameters.
-    smooth_param!(εₜarr, tuple(pₜ_oind2d), oind2shp, oind2εind, εind2εₜ, gₑ, l, lg, σ, ∆τ, iseₜ˔shp)  # εₜ tensors (rank-0, so scalars)
-    smooth_param!(µₜarr, tuple(pₜ_oind2d), oind2shp, oind2μind, μind2μₜ, gₑ, l, lg, σ, ∆τ, ishₜ˔shp)  # μₜ tensors (rank-0, so scalars)
-    smooth_param!(µₗarr, tuple(pₗ_oind2d), oind2shp, oind2μind, μind2μₗ, gₘ, l, lg, σ, ∆τ, ishₗ˔shp)  # μₗ tensors (rank-0, so scalars)
+    smooth_param!(εₜarr, tuple(pₜ_oind2d), oind2shp, oind2εind, εind2εₜ, gtₑ, l, lg, σ, ∆τ, iseₜ˔shp)  # εₜ tensors (rank-0, so scalars)
+    smooth_param!(µₜarr, tuple(pₜ_oind2d), oind2shp, oind2μind, μind2μₜ, gtₑ, l, lg, σ, ∆τ, ishₜ˔shp)  # μₜ tensors (rank-0, so scalars)
+    smooth_param!(µₗarr, tuple(pₗ_oind2d), oind2shp, oind2μind, μind2μₗ, gtₘ, l, lg, σ, ∆τ, ishₗ˔shp)  # μₗ tensors (rank-0, so scalars)
 
     return nothing
 end

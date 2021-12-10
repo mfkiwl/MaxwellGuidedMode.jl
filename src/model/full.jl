@@ -38,8 +38,8 @@ function calc_matparams!(mdl::ModelFull)
     ∆τ = grid.ghosted.∆τ
 
     boundft = mdl.boundft
-    gₑ = ft2gt.(EE,boundft)
-    gₘ = ft2gt.(HH,boundft)
+    gtₑ = ft2gt.(EE,boundft)
+    gtₘ = ft2gt.(HH,boundft)
 
     εₜarr = mdl.εₜarr
     µₜarr = mdl.μₜarr
@@ -81,13 +81,13 @@ function calc_matparams!(mdl::ModelFull)
     # Assign the material parameters.
     # (See the figure in L10 - Eigenmode Analysis > 1.3 Waveguide mode analysis > Matrix
     # equation formulation.)
-    assign_param!(εₜarr, (εyy_oind2d,εxx_oind2d), oind2shp, oind2εind, εind2εₜ, gₑ, τl, isbloch)  # diagonal entries of εₜ tensors
-    assign_param!(εₜarr, tuple(μzz_oind2d), oind2shp, oind2εind, εind2εₜ, gₑ, τl, isbloch)  # off-diagonal entries of εₜ tensors
-    assign_param!(µₗarr, tuple(εoo_oind2d), oind2shp, oind2μind, μind2μₗ, gₘ, τl, isbloch)  # μₗ tensors (rank-0, so scalars)
+    assign_param!(εₜarr, (εyy_oind2d,εxx_oind2d), oind2shp, oind2εind, εind2εₜ, gtₑ, τl, isbloch)  # diagonal entries of εₜ tensors
+    assign_param!(εₜarr, tuple(μzz_oind2d), oind2shp, oind2εind, εind2εₜ, gtₑ, τl, isbloch)  # off-diagonal entries of εₜ tensors
+    assign_param!(µₗarr, tuple(εoo_oind2d), oind2shp, oind2μind, μind2μₗ, gtₘ, τl, isbloch)  # μₗ tensors (rank-0, so scalars)
 
-    assign_param!(µₜarr, (μyy_oind2d,μxx_oind2d), oind2shp, oind2μind, μind2μₜ, gₘ, τl, isbloch)  # diagonal entries of μₜ tensors
-    assign_param!(µₜarr, tuple(εzz_oind2d), oind2shp, oind2μind, μind2μₜ, gₘ, τl, isbloch)  # off-diagonal entries of μₜ tensors
-    assign_param!(εₗarr, tuple(μoo_oind2d), oind2shp, oind2εind, εind2εₗ, gₑ, τl, isbloch)  # εₗ tensors (rank-0, so scalars)
+    assign_param!(µₜarr, (μyy_oind2d,μxx_oind2d), oind2shp, oind2μind, μind2μₜ, gtₘ, τl, isbloch)  # diagonal entries of μₜ tensors
+    assign_param!(µₜarr, tuple(εzz_oind2d), oind2shp, oind2μind, μind2μₜ, gtₘ, τl, isbloch)  # off-diagonal entries of μₜ tensors
+    assign_param!(εₗarr, tuple(μoo_oind2d), oind2shp, oind2εind, εind2εₗ, gtₑ, τl, isbloch)  # εₗ tensors (rank-0, so scalars)
 
     # Some temporary arrays should be identical.  For example, εyy_oind2d and μxx_oind2d are
     # evaluated at the locations surrounding the εyy and μxx locations, which are the same
@@ -100,13 +100,13 @@ function calc_matparams!(mdl::ModelFull)
     @assert isequal(μoo_oind2d, μzz_oind2d)
 
     # Smooth the material parameters.
-    smooth_param!(εₜarr, (εxx_oind2d,εyy_oind2d), oind2shp, oind2εind, εind2εₜ, gₑ, l, lg, σ, ∆τ, iseₜ˔shp)  # diagonal entries of εₜ tensors
-    smooth_param!(εₜarr, tuple(εoo_oind2d), oind2shp, oind2εind, εind2εₜ, gₑ, l, lg, σ, ∆τ, iseₜ˔shp)  # off-diagonal entries of εₜ tensors
-    smooth_param!(µₗarr, tuple(μzz_oind2d), oind2shp, oind2μind, μind2μₗ, gₘ, l, lg, σ, ∆τ, ishₗ˔shp)  # μₗ tensors (rank-0, so scalars)
+    smooth_param!(εₜarr, (εxx_oind2d,εyy_oind2d), oind2shp, oind2εind, εind2εₜ, gtₑ, l, lg, σ, ∆τ, iseₜ˔shp)  # diagonal entries of εₜ tensors
+    smooth_param!(εₜarr, tuple(εoo_oind2d), oind2shp, oind2εind, εind2εₜ, gtₑ, l, lg, σ, ∆τ, iseₜ˔shp)  # off-diagonal entries of εₜ tensors
+    smooth_param!(µₗarr, tuple(μzz_oind2d), oind2shp, oind2μind, μind2μₗ, gtₘ, l, lg, σ, ∆τ, ishₗ˔shp)  # μₗ tensors (rank-0, so scalars)
 
-    smooth_param!(µₜarr, (μxx_oind2d,μyy_oind2d), oind2shp, oind2μind, μind2μₜ, gₘ, l, lg, σ, ∆τ, ishₜ˔shp)  # diagonal entries of μₜ tensors
-    smooth_param!(µₜarr, tuple(μoo_oind2d), oind2shp, oind2μind, μind2μₜ, gₘ, l, lg, σ, ∆τ, ishₜ˔shp)  # off-diagonal entries of μₜ tensors
-    smooth_param!(εₗarr, tuple(εzz_oind2d), oind2shp, oind2εind, εind2εₗ, gₑ, l, lg, σ, ∆τ, iseₗ˔shp)  # εₗ tensors (rank-0, so scalars)
+    smooth_param!(µₜarr, (μxx_oind2d,μyy_oind2d), oind2shp, oind2μind, μind2μₜ, gtₘ, l, lg, σ, ∆τ, ishₜ˔shp)  # diagonal entries of μₜ tensors
+    smooth_param!(µₜarr, tuple(μoo_oind2d), oind2shp, oind2μind, μind2μₜ, gtₘ, l, lg, σ, ∆τ, ishₜ˔shp)  # off-diagonal entries of μₜ tensors
+    smooth_param!(εₗarr, tuple(εzz_oind2d), oind2shp, oind2εind, εind2εₗ, gtₑ, l, lg, σ, ∆τ, iseₗ˔shp)  # εₗ tensors (rank-0, so scalars)
 
     return nothing
 end

@@ -129,13 +129,13 @@ function create_stretched_∆ls(mdl::Model)
     s∆l⁻¹ = invert_∆l(s∆l)
 
     boundft = mdl.boundft
-    gₑ = ft2gt.(EE, boundft)
-    gₘ = ft2gt.(HH, boundft)
+    gtₑ = ft2gt.(EE, boundft)
+    gtₘ = ft2gt.(HH, boundft)
 
-    s∆lₑ = t_ind(s∆l, gₑ)  # stretched ∆l's centered at E-field plane locations
-    s∆lₘ = t_ind(s∆l, gₘ)  # stretched ∆l's centered at H-field plane locations
-    s∆lₑ⁻¹ = t_ind(s∆l⁻¹, gₑ)
-    s∆lₘ⁻¹ = t_ind(s∆l⁻¹, gₘ)
+    s∆lₑ = t_ind(s∆l, gtₑ)  # stretched ∆l's centered at E-field plane locations
+    s∆lₘ = t_ind(s∆l, gtₘ)  # stretched ∆l's centered at H-field plane locations
+    s∆lₑ⁻¹ = t_ind(s∆l⁻¹, gtₑ)
+    s∆lₘ⁻¹ = t_ind(s∆l⁻¹, gtₘ)
 
     return s∆lₑ, s∆lₘ, s∆lₑ⁻¹, s∆lₘ⁻¹
 end
