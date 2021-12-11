@@ -8,6 +8,6 @@ using Arpack
 using LinearAlgebra: normalize!
 
 include("model/model.jl")
-include("scan_param.jl")
+include("scan_param/scan_param.jl")
 
 end

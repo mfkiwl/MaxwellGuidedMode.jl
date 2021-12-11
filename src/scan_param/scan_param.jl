@@ -1,7 +1,7 @@
 export ParametrizedMode
 export scan_param!
 
-mutable struct ParametrizedMode{Kₑ,Kₘ,NT<:NamedTuple,AC<:AbsArrComplexF}
+struct ParametrizedMode{Kₑ,Kₘ,NT<:NamedTuple,AC<:AbsArrComplexF}
     θ::NT  # named tuple of parameters to scan; entries should be vectors of same length; must have θ.ω
     β::AC  # β(θ)
     E::NTuple{Kₑ,ArrComplexF}  # E(θ)
