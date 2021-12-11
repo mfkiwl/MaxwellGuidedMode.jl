@@ -6,7 +6,7 @@ export create_iF′ₗgen, create_iHₗgen, create_iEₗgen
 export create_βF′ₜgen, create_βHₜgen, create_βEₜgen
 export create_A
 export complete_fields, calc_mode
-export poynting
+export poynting, powerₗ
 
 # Do not export Model; quality it with the package name MaxwellFDFD, because I would have
 # similar types in other packages such as MaxwellSALT and MaxwellGuide.
@@ -303,6 +303,7 @@ function calc_mode(mdl::Model, ω::Real, βguess::Number)
     β = .√β²[nev]
 
     E, H = complete_fields(β, fₜ, ft_eq, ω, Ps, ∇̽s, πcmps, mdl)
+    normalize!(E, H, mdl)
 
     return (β=β, E=E, H=H)
 end
@@ -352,6 +353,42 @@ function complete_fields end
 # are defined.  In the future, I may need to provide some wrapper functions that help the
 # users on this regard.
 function poynting end
+
+# Calculate the power along the longitudinal direction.
+function powerₗ(E::NTuple{Kₑ,AbsArrNumber{K}},
+                H::NTuple{Kₘ,AbsArrNumber{K}},
+                mdl::Model{K,Kₑ,Kₘ}
+                ) where {K,Kₑ,Kₘ}
+    S = poynting(E, H, mdl)
+    Sz = S[end]
+
+    gtₑ = ft2gt.(HH, mdl.boundft)
+    lvxl = t_ind(mdl.grid.ghosted.l, gtₑ)  # locations of x-normal edges of E-field pixels surrounding Sz
+
+    vc = VoxelwiseConstant(Sz, lvxl)
+    Pz = integral(vc)
+    @assert isreal(Pz)
+
+    return Pz
+end
+
+function LinearAlgebra.normalize!(E::NTuple{Kₑ,AbsArrNumber{K}},
+                                  H::NTuple{Kₘ,AbsArrNumber{K}},
+                                  mdl::Model{K,Kₑ,Kₘ}
+                                  ) where {K,Kₑ,Kₘ}
+    Pz = powerₗ(E, H, mdl)
+    sqrtPz = √Pz
+
+    for k = 1:Kₑ
+        E[k] ./= sqrtPz
+    end
+    
+    for k = 1:Kₘ
+        H[k] ./= sqrtPz
+    end
+
+    return nothing
+end
 
 include("full.jl")
 include("te.jl")
