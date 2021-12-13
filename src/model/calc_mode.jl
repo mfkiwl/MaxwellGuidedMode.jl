@@ -186,6 +186,12 @@ function calc_mode(mdl::Model, ω::Real, βguess::Number;
     fₜ = f[:,nev]
     β = .√β²[nev]
 
+    if length(fguess)==length(fₜ)
+        α = fguess⋅fₜ
+        θ = -angle(α)
+        fₜ .*= exp(im*θ)
+    end
+
     E, H = complete_fields(β, fₜ, ft_eq, ω, Ps, ∇̽s, πcmps, mdl)
     normalize!(E, H, mdl)
 
