@@ -89,3 +89,5 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
 
     return nothing
 end
+
+include("dispersion.jl")

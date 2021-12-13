@@ -8,16 +8,20 @@ version = "0.2.0"
 [deps]
 AbbreviatedTypes = "1766def0-c946-4dda-a59e-d0d07f8410f7"
 Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+Dierckx = "39dd38d3-220a-591b-8e3c-4c3a8c710a94"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MaxwellBase = "7ddc1c72-b467-4b56-ac1e-188734e3cfa7"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SimpleConstants = "6ca440b6-64d6-4b6c-88af-e5d091cb43b1"
 VoxelwiseConstantMapping = "30c4ba4d-5c6d-4df8-9a6f-7ded98721337"
 
 [compat]
 AbbreviatedTypes = "^0.2.1"
 Arpack = "^0.5.3"
+Dierckx = "^0.5.1"
 MaxwellBase = "^0.1.10"
 Reexport = "^1.0.0"
+SimpleConstants = "^0.1.1"
 VoxelwiseConstantMapping = "^0.1.1"
 julia = "^1.7"
 
