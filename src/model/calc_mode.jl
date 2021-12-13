@@ -170,7 +170,8 @@ function create_A(ft::FieldType,  # type of input field Fₜ
     return A
 end
 
-function calc_mode(mdl::Model, ω::Real, βguess::Number)
+function calc_mode(mdl::Model, ω::Real, βguess::Number;
+                   fguess::AbsVecNumber=ComplexF[])  # default v0 of eigs() is Float[]; not sure using ComplexF[] makes any difference
     ## Create the eigenequation and solve it.
     Ps = create_paramops(mdl)
     ∇̽s = create_curls(mdl)
@@ -180,7 +181,7 @@ function calc_mode(mdl::Model, ω::Real, βguess::Number)
     A = create_A(ft_eq, ω, Ps, ∇̽s, πcmps)
 
     nev = 1
-    β², f = eigs(A; nev, sigma=βguess^2)
+    β², f = eigs(A; nev, sigma=βguess^2, v0=fguess)
 
     fₜ = f[:,nev]
     β = .√β²[nev]
@@ -188,5 +189,5 @@ function calc_mode(mdl::Model, ω::Real, βguess::Number)
     E, H = complete_fields(β, fₜ, ft_eq, ω, Ps, ∇̽s, πcmps, mdl)
     normalize!(E, H, mdl)
 
-    return (β=β, E=E, H=H)
+    return (β=β, E=E, H=H, f=fₜ)
 end

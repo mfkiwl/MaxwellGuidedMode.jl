@@ -120,20 +120,20 @@ end
 function calc_matparams! end
 function complete_fields end
 
-# function field2vec(E::NTuple{Kₑ,AbsVecNumber{K}}, H::NTuple{Kₘ,AbsVecNumber{K}},
-#                    mdl::Model{K,Kₑ,Kₘ}
-#                    ) where {K,Kₑ,Kₘ}
-#     U = mdl.ft_eq==EE ? E : H
-#     cmpᵤₜ = mdl.ft_eq==EE ? mdl.cmpₑₜ : mdl.cmpₘₜ
-#     Uₜ = cat(U[cmpᵤₜ]..., dims=K+1)
-#
-#     order_cmpfirst = mdl.order_cmpfirst
-#     if order_cmpfirst
-#         Uₜ = permutedims(Uₜ, circshift(1:K, 1))
-#     end
-#
-#     return field_arr2vec(Uₜ; order_cmpfirst)
-# end
+function field2vec(E::NTuple{Kₑ,AbsVecNumber{K}}, H::NTuple{Kₘ,AbsVecNumber{K}},
+                   mdl::Model{K,Kₑ,Kₘ}
+                   ) where {K,Kₑ,Kₘ}
+    U = mdl.ft_eq==EE ? E : H
+    cmpᵤₜ = mdl.ft_eq==EE ? mdl.cmpₑₜ : mdl.cmpₘₜ
+    Uₜ = cat(U[cmpᵤₜ]..., dims=K+1)
+
+    order_cmpfirst = mdl.order_cmpfirst
+    if order_cmpfirst
+        Uₜ = permutedims(Uₜ, circshift(1:K, 1))
+    end
+
+    return field_arr2vec(Uₜ; order_cmpfirst)
+end
 
 include("poynting.jl")
 include("calc_mode.jl")

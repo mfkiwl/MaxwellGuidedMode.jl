@@ -45,6 +45,7 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
     rng_shp = ntuple(k->Colon(), Val(K))  # represent all indices in shape dimensions
     t = @elapsed begin
         βguess = βguessₑ
+        fguess = ComplexF[]
         for χ = CI
             println("\tScanning $(Nθ+1-LI[χ]) out of $Nθ...")
             θval = t_ind(θvals, χ)
@@ -54,7 +55,8 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
             clear_objs!(mdl)
             update_model!(mdl, θᵪ)
 
-            β, E, H = calc_mode(mdl, ωᵪ, βguess)
+
+            β, E, H, fguess = calc_mode(mdl, ωᵪ, βguess; fguess)
 
             pm.β[χ] = β  # filling from last corner of parameter space
             for k = 1:Kₑ
@@ -74,6 +76,9 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
                     ∆χclose = CartesianIndex(ntuple(k->(k==sc_max), Val(Kθ)))
                     χclose = χ + ∆χclose
                     βguess = β[χclose]
+                    Eguess = view.(pm.E, χclose, rng_shp...)
+                    Hguess = view.(pm.H, χclose, rng_shp...)
+                    fguess = field2vec(Eguess, Hguess, mdl)
                 else
                     βguess = β
                 end
