@@ -1,41 +1,41 @@
 export ParametrizedMode
 export scan_param!
 
-struct ParametrizedMode{K,Kₑ,Kₘ,NT<:NamedTuple,AC<:AbsArrComplexF}
+struct ParametrizedMode{K,Kₑ,Kₘ,Kθ,Kθₛ,NT<:NamedTuple}
     θ::NT  # named tuple of parameters to scan; entries should be vectors of same length; must have θ.ω
-    β::AC  # β(θ)
-    E::NTuple{Kₑ,ArrComplexF{K}}  # E(θ)
-    H::NTuple{Kₘ,ArrComplexF{K}}  # H(θ)
+    β::ArrComplexF{Kθ}  # β(θ)
+    E::NTuple{Kₑ,ArrComplexF{Kθₛ}}  # E(θ)
+    H::NTuple{Kₘ,ArrComplexF{Kθₛ}}  # H(θ)
 end
 
 function ParametrizedMode(θ::NamedTuple, mdl::Model{K,Kₑ,Kₘ}) where {K,Kₑ,Kₘ}
     haskey(θ, :ω) || @error "θ = $θ should have entry named ω."
     all(issorted.(values(θ))) || @error "Each entry of θ should be sorted in ascending order for interpolation."
-    szθ = length.(values(θ))
 
-    β = ArrComplexF(undef, szθ)
+    szθ = length.(values(θ))
+    Kθ = length(szθ)
 
     szₛ = size(mdl.grid)  # size of shape dimension
+    Kθₛ = Kθ + length(szₛ)
+
+    β = ArrComplexF(undef, szθ)
     E = ntuple(k->ArrComplexF(undef, szθ..., szₛ...), Val(Kₑ))
     H = ntuple(k->ArrComplexF(undef, szθ..., szₛ...), Val(Kₘ))
 
-    return ParametrizedMode(θ,β,E,H)
+    return ParametrizedMode{K,Kₑ,Kₘ,Kθ,Kθₛ,typeof(θ)}(θ,β,E,H)
 end
 
 Base.length(pm::ParametrizedMode) = length(pm.θ.ω)
 
-function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ},
+function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
                      βguessₑ::Number,  # guess β for ending parameters (e.g., largest ω = shortest λ) in pm
                      mdl::Model{K,Kₑ,Kₘ};
                      update_model!::Any=(mdl,θ)->nothing  # default: do not update model
-                     ) where {K,Kₑ,Kₘ}
+                     ) where {K,Kₑ,Kₘ,Kθ}
     println("Begin parameter scan.")
 
     θ = pm.θ
-
     θkeys = keys(θ)
-    Nθkeys = length(θkeys)
-
     θvals = values(θ)
     szθ = length.(θvals)
     Nθ = prod(szθ)
@@ -71,7 +71,7 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ},
                 sc = .!iszero.(∆χ.I)  # sc[k] = true if kth subscript will change
                 if sum(sc) ≠ 1  # two or more subscripts will change
                     sc_max = findlast(sc)  # last dimension of changing subscript
-                    ∆χclose = CartesianIndex(ntuple(k->(k==sc_max), Val(Nθkeys)))
+                    ∆χclose = CartesianIndex(ntuple(k->(k==sc_max), Val(Kθ)))
                     χclose = χ + ∆χclose
                     βguess = β[χclose]
                 else
