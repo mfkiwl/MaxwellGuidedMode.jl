@@ -1,11 +1,11 @@
 export ParametrizedMode
 export scan_param!
 
-struct ParametrizedMode{Kₑ,Kₘ,NT<:NamedTuple,AC<:AbsArrComplexF}
+struct ParametrizedMode{K,Kₑ,Kₘ,NT<:NamedTuple,AC<:AbsArrComplexF}
     θ::NT  # named tuple of parameters to scan; entries should be vectors of same length; must have θ.ω
     β::AC  # β(θ)
-    E::NTuple{Kₑ,ArrComplexF}  # E(θ)
-    H::NTuple{Kₘ,ArrComplexF}  # H(θ)
+    E::NTuple{Kₑ,ArrComplexF{K}}  # E(θ)
+    H::NTuple{Kₘ,ArrComplexF{K}}  # H(θ)
 end
 
 function ParametrizedMode(θ::NamedTuple, mdl::Model{K,Kₑ,Kₘ}) where {K,Kₑ,Kₘ}
@@ -24,7 +24,7 @@ end
 
 Base.length(pm::ParametrizedMode) = length(pm.θ.ω)
 
-function scan_param!(pm::ParametrizedMode,
+function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ},
                      βguessₑ::Number,  # guess β for ending parameters (e.g., largest ω = shortest λ) in pm
                      mdl::Model{K,Kₑ,Kₘ};
                      update_model!::Any=(mdl,θ)->nothing  # default: do not update model
