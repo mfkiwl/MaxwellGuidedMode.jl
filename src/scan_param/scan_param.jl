@@ -41,13 +41,14 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
     Nθ = prod(szθ)
 
     CI = reverse(CartesianIndices(szθ))  # run from last corner of parameter space
-    LI = LinearIndices(szθ)
+    LI = reverse(LinearIndices(szθ))
     rng_shp = ntuple(k->Colon(), Val(K))  # represent all indices in shape dimensions
     t = @elapsed begin
         βguess = βguessₑ
         fguess = ComplexF[]
+        n = 0
         for χ = CI
-            println("\tScanning $(Nθ+1-LI[χ]) out of $Nθ...")
+            println("\tScanning $(LI[χ]) out of $Nθ...")
             θval = t_ind(θvals, χ)
             θᵪ = NamedTuple{θkeys}(θval)
             ωᵪ = θᵪ.ω
@@ -67,20 +68,25 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
             end
 
             λ = LI[χ]  # linear index corresponding to χ
-            if λ ≠ 1  # not first parameter (that is examined last)
-                χnext = CI[λ-1]  # next Cartesian index
+            if λ ≠ Nθ  # still more parameters to examine, so update βguess and fguess
+                χnext = CI[λ+1]  # next Cartesian index
                 ∆χ = χnext - χ
                 sc = .!iszero.(∆χ.I)  # sc[k] = true if kth subscript will change
                 if sum(sc) ≠ 1  # two or more subscripts will change
                     sc_max = findlast(sc)  # last dimension of changing subscript
                     ∆χclose = CartesianIndex(ntuple(k->(k==sc_max), Val(Kθ)))
                     χclose = χ + ∆χclose
-                    βguess = β[χclose]
-                    Eguess = view.(pm.E, χclose, rng_shp...)
-                    Hguess = view.(pm.H, χclose, rng_shp...)
+                    βguess = pm.β[χclose]
+
+                    # Below, use χclose.I... instead of χclose, because "iteration is
+                    # deliberately unsupported for CartesianIndex."
+                    Eguess = view.(pm.E, χclose.I..., rng_shp...)
+                    Hguess = view.(pm.H, χclose.I..., rng_shp...)
+
                     fguess = field2vec(Eguess, Hguess, mdl)
                 else
                     βguess = β
+                    # Don't update fguess; use output of calc_mode().
                 end
             end
         end
