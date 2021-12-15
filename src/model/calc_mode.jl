@@ -171,6 +171,7 @@ function create_A(ft::FieldType,  # type of input field Fₜ
 end
 
 function calc_mode(mdl::Model, ω::Real, βguess::Number;
+                   nmode::Int=1,  # mode number
                    fguess::AbsVecNumber=ComplexF[])  # default v0 of eigs() is Float[]; not sure using ComplexF[] makes any difference
     ## Create the eigenequation and solve it.
     Ps = create_paramops(mdl)
@@ -180,11 +181,10 @@ function calc_mode(mdl::Model, ω::Real, βguess::Number;
     ft_eq = mdl.ft_eq
     A = create_A(ft_eq, ω, Ps, ∇̽s, πcmps)
 
-    nev = 1
-    β², f = eigs(A; nev, sigma=βguess^2, v0=fguess)
+    β², f = eigs(A, nev=nmode, sigma=βguess^2, v0=fguess)
 
-    fₜ = f[:,nev]
-    β = .√β²[nev]
+    fₜ = f[:,nmode]
+    β = .√β²[nmode]
 
     if length(fguess)==length(fₜ)
         α = fguess⋅fₜ
