@@ -123,7 +123,7 @@ function complete_fields(β::Number,  # propagation constant
     Ez = reshape(eₗ, sz_grid)
     Hy = reshape(hₜ, sz_grid)
 
-    return (E=(Ex, Ez), H=tuple(Hy))
+    return (E=(Ex, Ez), H=Hy)
 end
 
 function poynting(E::Tuple2{AbsVecNumber},  # (Ex, Ez)
