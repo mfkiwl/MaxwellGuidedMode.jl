@@ -2,7 +2,7 @@ export DispersiveMode
 export DispersiveField
 export calc_dispersion
 
-const DispersiveMode{K,Kₑ,Kₘ,K₊₁,VR<:AbstractRange{<:Real}} = ParametrizedMode{K,Kₑ,Kₘ,1,K₊₁,NamedTuple{(:ω,),Tuple{VR}}}
+const DispersiveMode{K,Kₑ,Kₘ,K₊₁,VR<:AbsVecReal} = ParametrizedMode{K,Kₑ,Kₘ,1,K₊₁,NamedTuple{(:ω,),Tuple{VR}}}
 
 DispersiveMode(ω::AbsVecReal, mdl::Model) = (θ = (ω=ω,); ParametrizedMode(θ,mdl))
 
@@ -11,7 +11,7 @@ struct DispersiveField{K}
     Fᵢ_fun::Array{Spline1D,K}
 end
 
-function DispersiveField(Ω::AbstractRange{<:Real},
+function DispersiveField(Ω::AbsVecReal,
                          F::AbsArrNumber{K₊₁}  # F[Ω,x,y,z]
                          ) where {K₊₁}
     size(F,1)==length(Ω) || @error "size(F,1) = $(size(F,1)) and length(Ω) = $(length(Ω)) should be same."
