@@ -46,7 +46,7 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
     rng_shp = ntuple(k->Colon(), Val(K))  # represent all indices in shape dimensions
     t = @elapsed begin
         βguess = βguessₑ
-        fguess = ComplexF[]
+        fₜref = ComplexF[]
         for χ = CI
             λ = LI[χ]  # linear index corresponding to χ
             println("\tScanning $λ out of $Nθ...")
@@ -57,7 +57,7 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
             clear_objs!(mdl)
             update_model!(mdl, θᵪ)
 
-            β, E, H, fguess = calc_mode(mdl, ωᵪ, βguess; nmode, fguess)
+            β, E, H, fₜref = calc_mode(mdl, ωᵪ, βguess; nmode, fₜref)
 
             pm.β[χ] = β  # filling from last corner of parameter space
             for k = 1:Kₑ
@@ -67,7 +67,7 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
                 view(pm.H[k], χ, rng_shp...) .= H[k]
             end
 
-            if λ ≠ Nθ  # still more parameters to examine, so update βguess and fguess
+            if λ ≠ Nθ  # still more parameters to examine, so update βguess and fₜref
                 χnext = CI[λ+1]  # next Cartesian index
                 ∆χ = χnext - χ
                 sc = .!iszero.(∆χ.I)  # sc[k] = true if kth subscript will change
@@ -82,10 +82,10 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
                     Eguess = view.(pm.E, χclose.I..., rng_shp...)
                     Hguess = view.(pm.H, χclose.I..., rng_shp...)
 
-                    fguess = field2vec(Eguess, Hguess, mdl)
+                    fₜref = field2vec(Eguess, Hguess, mdl)
                 else
                     βguess = β
-                    # Don't update fguess; use output of calc_mode().
+                    # Don't update fₜref; use output of calc_mode().
                 end
             end
         end

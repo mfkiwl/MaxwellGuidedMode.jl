@@ -172,7 +172,7 @@ end
 
 function calc_mode(mdl::Model, ω::Real, βguess::Number;
                    nmode::Int=1,  # mode number
-                   fguess::AbsVecNumber=ComplexF[])  # default v0 of eigs() is Float[]; not sure using ComplexF[] makes any difference
+                   fₜref::AbsVecNumber=ComplexF[])  # reference field w.r.t. which optimal phase angle is calculated
     ## Create the eigenequation and solve it.
     Ps = create_paramops(mdl)
     ∇̽s = create_curls(mdl)
@@ -186,8 +186,9 @@ function calc_mode(mdl::Model, ω::Real, βguess::Number;
     fₜ = f[:,nmode]
     β = .√β²[nmode]
 
-    if length(fguess)==length(fₜ)
-        α = fguess⋅fₜ
+    # See RN - NLSE > December 12, 2021
+    if length(fₜref)==length(fₜ)
+        α = fₜref⋅fₜ
         θ = -angle(α)
         fₜ .*= exp(im*θ)
     end
