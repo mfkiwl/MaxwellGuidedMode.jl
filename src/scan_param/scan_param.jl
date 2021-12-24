@@ -47,9 +47,9 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
     t = @elapsed begin
         βguess = βguessₑ
         fguess = ComplexF[]
-        n = 0
         for χ = CI
-            println("\tScanning $(LI[χ]) out of $Nθ...")
+            λ = LI[χ]  # linear index corresponding to χ
+            println("\tScanning $λ out of $Nθ...")
             θval = t_ind(θvals, χ)
             θᵪ = NamedTuple{θkeys}(θval)
             ωᵪ = θᵪ.ω
@@ -68,7 +68,6 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
                 view(pm.H[k], χ, rng_shp...) .= H[k]
             end
 
-            λ = LI[χ]  # linear index corresponding to χ
             if λ ≠ Nθ  # still more parameters to examine, so update βguess and fguess
                 χnext = CI[λ+1]  # next Cartesian index
                 ∆χ = χnext - χ
