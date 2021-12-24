@@ -31,7 +31,7 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
                      βguessₑ::Number,  # guess β for ending parameters (e.g., largest ω = shortest λ) in pm
                      mdl::Model{K,Kₑ,Kₘ};
                      update_model!::Any=(mdl,θ)->nothing,  # default: do not update model
-                     kwargs...  # kwargs to pass to calc_mode()
+                     nmode::Int=1  # mode number
                      ) where {K,Kₑ,Kₘ,Kθ}
     println("Begin parameter scan.")
 
@@ -57,8 +57,7 @@ function scan_param!(pm::ParametrizedMode{K,Kₑ,Kₘ,Kθ},
             clear_objs!(mdl)
             update_model!(mdl, θᵪ)
 
-
-            β, E, H, fguess = calc_mode(mdl, ωᵪ, βguess; fguess, kwargs...)
+            β, E, H, fguess = calc_mode(mdl, ωᵪ, βguess; nmode, fguess)
 
             pm.β[χ] = β  # filling from last corner of parameter space
             for k = 1:Kₑ
