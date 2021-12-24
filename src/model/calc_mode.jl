@@ -181,7 +181,7 @@ function calc_mode(mdl::Model, ω::Real, βguess::Number;
     ft_eq = mdl.ft_eq
     A = create_A(ft_eq, ω, Ps, ∇̽s, πcmps)
 
-    β², f = eigs(A, nev=nmode, sigma=βguess^2, v0=fguess)
+    β², f = eigs(A, nev=nmode, sigma=βguess^2)
 
     fₜ = f[:,nmode]
     β = .√β²[nmode]
