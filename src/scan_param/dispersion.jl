@@ -1,6 +1,6 @@
 export DispersiveMode
 export DispersiveField
-export calc_dispersion
+export calc_gvd
 
 const DispersiveMode{K,Kₑ,Kₘ,K₊₁,VR<:AbsVecReal} = ParametrizedMode{K,Kₑ,Kₘ,1,K₊₁,NamedTuple{(:ω,),Tuple{VR}}}
 
@@ -46,12 +46,15 @@ function (df::DispersiveField)(Ω::Real)
     return F
 end
 
-# Calculate quantities related to group velocity dispersion (GVD).  These quantities are
-# usually calculated around a specific frequency ω₀, which is provided to the function.
+# Create interpolated quantities related to group velocity dispersion (GVD).  These
+# quantities are usually calculated around a specific frequency ω₀, which is provided to the
+# function.
 #
 # This often generates the final results for publication, so the outputs are described in
 # the SI units.
-function calc_dispersion(dm::DispersiveMode{K,Kₑ,Kₘ}, ω₀::Real, unit::MaxwellUnit) where {K,Kₑ,Kₘ}
+#
+# The function is used after constructing dm by scan_param().
+function calc_gvd(dm::DispersiveMode{K,Kₑ,Kₘ}, ω₀::Real, unit::MaxwellUnit) where {K,Kₑ,Kₘ}
     ω = dm.θ.ω
     ω[1] ≤ ω₀ ≤ ω[end] || @error "ω₀ = $ω₀ should be within range of dm.θ.ω."
 
