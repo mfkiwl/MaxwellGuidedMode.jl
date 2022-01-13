@@ -1,6 +1,6 @@
 export DispersiveMode
 export DispersiveField
-export calc_gvd
+export calc_disp
 
 const DispersiveMode{K,Kₑ,Kₘ,K₊₁,VR<:AbsVecReal} = ParametrizedMode{K,Kₑ,Kₘ,1,K₊₁,NamedTuple{(:ω,),Tuple{VR}}}
 
@@ -54,10 +54,7 @@ end
 # the SI units.
 #
 # The function is used after constructing dm by scan_param().
-function calc_gvd(dm::DispersiveMode{K,Kₑ,Kₘ}, ω₀::Real, unit::MaxwellUnit) where {K,Kₑ,Kₘ}
-    ω = dm.θ.ω
-    ω[1] ≤ ω₀ ≤ ω[end] || @error "ω₀ = $ω₀ should be within range of dm.θ.ω."
-
+function calc_disp(dm::DispersiveMode, ω₀::Real, unit::MaxwellUnit)
     # Convert the units of dm's quantities to the SI units.
     ω₀ *= unit.ω
     ω *= unit.ω  # ω is newly allocated because *= instead of .*= is used
