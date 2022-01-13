@@ -2,9 +2,9 @@ module MaxwellGuidedMode
 
 using Reexport
 @reexport using MaxwellBase
-using VoxelwiseConstantMapping
 using AbbreviatedTypes
 using SimpleConstants
+using VoxelwiseConstantMapping
 using Arpack
 using Dierckx
 using LinearAlgebra: normalize!
