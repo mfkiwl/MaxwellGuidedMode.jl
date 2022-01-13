@@ -41,6 +41,24 @@ export poynting, powerₗ
 # users on this regard.
 function poynting end
 
+# Used in poynting().
+function interp_field!(G::AbsArrComplexF{K},  # where averaged fields are stored
+                       F::AbsArrComplexF{K},  # field to average
+                       ft::FieldType,  # type of field to average
+                       nw::Int,  # direction of averaging
+                       ∆l::Tuple2{NTuple{K,VecFloat}},
+                       ∆l⁻¹::Tuple2{NTuple{K,VecFloat}},
+                       boundft::SVec{K,FieldType},
+                       isbloch::SBool{K};
+                       kwargs...  # keyword arguments for apply_m̂!()
+                       ) where {K}
+    nft = Int(ft); nft′ = alter(nft)
+    isfwd = boundft[nw]==ft
+    apply_m̂!(G, F, nw, isfwd, ∆l[nft][nw], ∆l⁻¹[nft′][nw], isbloch[nw]; kwargs...)  # intepolate Hz at Ey-locations
+
+    return nothing
+end
+
 # Calculate the power along the longitudinal direction.
 function powerₗ(E::NTuple{Kₑ,AbsArrNumber{K}},
                 H::NTuple{Kₘ,AbsArrNumber{K}},
@@ -54,7 +72,6 @@ function powerₗ(E::NTuple{Kₑ,AbsArrNumber{K}},
 
     vc = VoxelwiseConstant(Sz, lvxl)
     Pz = integral(vc)
-    @assert isreal(Pz)
 
     return Pz
 end

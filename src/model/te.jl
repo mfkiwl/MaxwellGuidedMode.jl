@@ -126,6 +126,7 @@ function complete_fields(β::Number,  # propagation constant
     return (E=Ey, H=(Hx, Hz))
 end
 
+# See the field configurations in L10 - Eigenmode Analysis > Matrix equation formulation.
 function poynting(E::AbsVecNumber,  # Ey
                   H::Tuple2{AbsVecNumber},  # (Hx, Hz)
                   mdl::ModelTE)
@@ -140,17 +141,17 @@ function poynting(E::AbsVecNumber,  # Ey
 
     nX = 1
 
+    Ftemp = ArrComplexF(undef, size(grid))  # vector; temporary storage
+
     # Calculate Sx.
-    m̂xHz = VecComplexF(undef, size(grid))
-    isfwd = boundft[nX]==HH
-    apply_m̂!(m̂xHz, Hz, nX, isfwd, ∆lₘ[nX], ∆lₑ⁻¹[nX], isbloch[nX])
-    Sx = 0.5real.(Ey .* conj.(m̂xHz))
+    Sx = ArrComplexF(undef, size(grid))  # vector
+    m̂xHz = Ftemp; interp_field!(m̂xHz, Hz, HH, nX, ∆l, ∆l⁻¹, boundft, isbloch)
+    Sx .= Ey .* conj.(m̂xHz)
 
     # Calculate Sz.
-    Sz = VecFloat(undef, size(grid))
-    Sz₋ = 0.5real.(Ey .* conj.(Hx))  # real array located at Ey
-    isfwd = boundft[nX]==EE
-    apply_m̂!(Sz, Sz₋, nX, isfwd, ∆lₑ[nX], ∆lₘ⁻¹[nX], isbloch[nX], α=-1.0)
+    Sz = ArrComplexF(undef, size(grid))  # vector
+    Sz₋ = Ftemp; Sz₋ .= Ey .* conj.(Hx)  # real array located at Ey
+    interp_field!(Sz, Sz₋, EE, nX, ∆l, ∆l⁻¹, boundft, isbloch, α=-1.0)
 
     return Sx, Sz
 end

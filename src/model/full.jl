@@ -161,6 +161,7 @@ function complete_fields(β::Number,  # propagation constant
     return (E=E, H=H)
 end
 
+# See the field configurations in L10 - Eigenmode Analysis > Matrix equation formulation.
 function poynting(E::Tuple3{AbsMatNumber},  # (Ex, Ey, Ez)
                   H::Tuple3{AbsMatNumber},  # (Hx, Hy, Hz)
                   mdl::ModelFull)
@@ -175,28 +176,40 @@ function poynting(E::Tuple3{AbsMatNumber},  # (Ex, Ey, Ez)
 
     nX, nY = 1, 2
 
+    Ftemp = ArrComplexF(undef, size(grid))  # matrix; temporary storage
+
     # Calculate Sx.
-    m̂xHz = MatComplexF(undef, size(grid))
-    isfwd = boundft[nX]==HH
-    apply_m̂!(m̂xHz, Hz, nX, isfwd, ∆lₘ[nX], ∆lₑ⁻¹[nX], isbloch[nX])
-    Sx = 0.5real.(Ey .* conj.(m̂xHz))
+    Sx = ArrComplexF(undef, size(grid))  # matrix
+
+    m̂xHz = Ftemp; interp_field!(m̂xHz, Hz, HH, nX, ∆l, ∆l⁻¹, boundft, isbloch)  # intepolate Hz at Ey-locations
+    Sx .= Ey .* conj.(m̂xHz)  # EyHz evaluated at centers of x-normal edges
+
+    m̂xHy = Ftemp; interp_field!(m̂xHy, Hy, HH, nX, ∆l, ∆l⁻¹, boundft, isbloch)  # intepolate Hy at Ez-locations
+    m̂xHy .= Ez .* conj.(m̂xHy)  # EzHy evaluated at end points of x-normal edges; need to interpolate at centers
+    Sx₋ = m̂xHy
+
+    interp_field!(Sx, Sx₋, EE, nY, ∆l, ∆l⁻¹, boundft, isbloch, α=-1.0, overwrite=false)  # interpolate Sx₋ at centers of x-normal edges
 
     # Calculate Sy.
-    m̂yHz = MatComplexF(undef, size(grid))
-    isfwd = boundft[nY]==HH
-    apply_m̂!(m̂yHz, Hz, nY, isfwd, ∆lₘ[nY], ∆lₑ⁻¹[nY], isbloch[nY])
-    Sy = 0.5real.(Ex .* conj.(m̂yHz))
+    Sy = ArrComplexF(undef, size(grid))  # matrix
+
+    m̂yHz = Ftemp; interp_field!(m̂yHz, Hz, HH, nY, ∆l, ∆l⁻¹, boundft, isbloch)  # intepolate Hz at Ex-locations
+    Sy .= -1.0 .* Ex .* conj.(m̂yHz)  # ExHz evaluated at centers of y-normal edges
+
+    m̂yHx = Ftemp; interp_field!(m̂yHx, Hx, HH, nY, ∆l, ∆l⁻¹, boundft, isbloch)  # intepolate Hx at Ez-locations
+    m̂yHx .= Ez .* conj.(m̂yHx)  # EzHx evaluated at end points of y-normal edges; need to interpolate at centers
+    Sy₊ = m̂yHx
+
+    interp_field!(Sy, Sy₊, EE, nX, ∆l, ∆l⁻¹, boundft, isbloch, overwrite=false)  # interpolate Sy₊ at centers of y-normal edges
 
     # Calculate Sz.
-    Sz = MatFloat(undef, size(grid))
+    Sz = ArrComplexF(undef, size(grid))  # matrix
 
-    Sz₊ = 0.5real.(Ex .* conj.(Hy))  # real array located at Ex
-    isfwd = boundft[nY]==EE
-    apply_m̂!(Sz, Sz₊, nY, isfwd, ∆lₑ[nY], ∆lₘ⁻¹[nY], isbloch[nY])
+    Sz₊ = Ftemp; Sz₊ .= Ex .* conj.(Hy)  # Ex and Hy are already co-located
+    interp_field!(Sz, Sz₊, EE, nY, ∆l, ∆l⁻¹, boundft, isbloch)  # Sz₊ interpolated at centers of pixels
 
-    Sz₋ = 0.5real.(Ey .* conj.(Hx))  # real array located at Ey
-    isfwd = boundft[nX]==EE
-    apply_m̂!(Sz, Sz₋, nX, isfwd, ∆lₑ[nX], ∆lₘ⁻¹[nX], isbloch[nX], α=-1.0, overwrite=false)
+    Sz₋ = Ftemp; Sz₋ .= Ey .* conj.(Hx)  # Ey and Hx are already co-located
+    interp_field!(Sz, Sz₋, EE, nX, ∆l, ∆l⁻¹, boundft, isbloch, α=-1.0, overwrite=false)  # Sz₋ interpolated at centers of pixels
 
     return Sx, Sy, Sz
 end

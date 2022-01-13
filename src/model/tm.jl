@@ -126,6 +126,7 @@ function complete_fields(β::Number,  # propagation constant
     return (E=(Ex, Ez), H=Hy)
 end
 
+# See the field configurations in L10 - Eigenmode Analysis > Matrix equation formulation.
 function poynting(E::Tuple2{AbsVecNumber},  # (Ex, Ez)
                   H::AbsVecNumber,  # Hy
                   mdl::ModelTM)
@@ -141,13 +142,13 @@ function poynting(E::Tuple2{AbsVecNumber},  # (Ex, Ez)
     nX = 1
 
     # Calculate Sx.
-    m̂xHy = VecComplexF(undef, size(grid))
-    isfwd = boundft[nX]==HH
-    apply_m̂!(m̂xHy, Hy, nX, isfwd, ∆lₘ[nX], ∆lₑ⁻¹[nX], isbloch[nX])
-    Sx = -0.5real.(Ez .* conj.(m̂xHy))
+    m̂xHy = ArrComplexF(undef, size(grid))  # vector
+    interp_field!(m̂xHy, Hy, HH, nX, ∆l, ∆l⁻¹, boundft, isbloch)
+    m̂xHy .= -1.0 .* Ez .* conj.(m̂xHy)
+    Sx = m̂xHy
 
     # Calculate Sz.
-    Sz = 0.5real.(Ex .* conj.(Hy))  # real array located at Ex
+    Sz = Ex .* conj.(Hy)  # real array located at Ex
 
     return Sx, Sz
 end
