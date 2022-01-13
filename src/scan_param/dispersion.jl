@@ -55,6 +55,7 @@ end
 
 Base.size(df::DispersiveField) = size(df.Fᵣ_fun)
 
+# Interpolate a given field at Ω.
 function (df::DispersiveField)(Ω::Real)
     sz_shp = size(df)
     F = ArrComplexF(undef, sz_shp)
