@@ -20,11 +20,11 @@ function create_stretched_∆ls(mdl::Model)
     s∆lₑ⁻¹ = t_ind(s∆l⁻¹, gtₑ)
     s∆lₘ⁻¹ = t_ind(s∆l⁻¹, gtₘ)
 
-    return s∆lₑ, s∆lₘ, s∆lₑ⁻¹, s∆lₘ⁻¹
+    return (s∆lₑ, s∆lₘ), (s∆lₑ⁻¹, s∆lₘ⁻¹)
 end
 
 function create_paramops(mdl::Model{K,Kₑ,Kₘ,Kₑₜ,Kₘₜ}) where {K,Kₑ,Kₘ,Kₑₜ,Kₘₜ}
-    s∆lₑ, s∆lₘ, s∆lₑ⁻¹, s∆lₘ⁻¹ = create_stretched_∆ls(mdl)
+    (s∆lₑ, s∆lₘ), (s∆lₑ⁻¹, s∆lₘ⁻¹) = create_stretched_∆ls(mdl)
     calc_matparams!(mdl)  # assignment and smoothing; implemented for each specialized alias of Model
 
     boundft = mdl.boundft
@@ -48,7 +48,7 @@ function create_paramops(mdl::Model{K,Kₑ,Kₘ,Kₑₜ,Kₘₜ}) where {K,Kₑ,
 end
 
 function create_curls(mdl::Model)
-    _, _, s∆lₑ⁻¹, s∆lₘ⁻¹ = create_stretched_∆ls(mdl)
+    _, (s∆lₑ⁻¹, s∆lₘ⁻¹) = create_stretched_∆ls(mdl)
 
     boundft = mdl.boundft
 

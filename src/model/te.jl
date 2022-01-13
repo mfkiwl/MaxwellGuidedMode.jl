@@ -133,7 +133,7 @@ function poynting(E::AbsVecNumber,  # Ey
     grid = mdl.grid
     isbloch = grid.isbloch
 
-    ∆lₑ, ∆lₘ, ∆lₑ⁻¹, ∆lₘ⁻¹ = create_∆ls(grid, boundft)
+    ∆l, ∆l⁻¹ = create_∆ls(grid, boundft)
 
     Ey = E
     Hx, Hz = H

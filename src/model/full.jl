@@ -168,7 +168,7 @@ function poynting(E::Tuple3{AbsMatNumber},  # (Ex, Ey, Ez)
     grid = mdl.grid
     isbloch = grid.isbloch
 
-    ∆lₑ, ∆lₘ, ∆lₑ⁻¹, ∆lₘ⁻¹ = create_∆ls(grid, boundft)
+    ∆l, ∆l⁻¹ = create_∆ls(grid, boundft)
 
     Ex, Ey, Ez = E
     Hx, Hy, Hz = H
