@@ -123,5 +123,6 @@ function calc_disp(dm::DispersiveMode, ω₀::Real, unit::MaxwellUnit)
     E_fun = DispersiveField.(Ref(Ω), dm.E, α=unit.E/√unit.P)
     H_fun = DispersiveField.(Ref(Ω), dm.H, α=unit.H/√unit.P)
 
-    return (ω₀=ω₀, ω=ω, Ω=Ω, neff=neff_fun, β=β_fun, β₁=β₁_fun, β₂=β₂_fun, ∆β=∆β_fun, vg=vg_fun, D=D_fun, E=E_fun, H=H_fun)
+    # Do not return ω and ω₀ to leave them normalized outside this function.
+    return (Ω=Ω, neff=neff_fun, β=β_fun, β₁=β₁_fun, β₂=β₂_fun, ∆β=∆β_fun, vg=vg_fun, D=D_fun, E=E_fun, H=H_fun)
 end
