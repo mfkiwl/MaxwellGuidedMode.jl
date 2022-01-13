@@ -2,6 +2,24 @@ export DispersiveMode
 export DispersiveField
 export calc_disp
 
+# Calculate the unnormalized Ω from normalized ω.
+function ω2Ω(ω::AbstractRange{<:Real}, ω₀::Real, unit::MaxwellUnit)
+    ωmin, ωmax = ω[1], ω[end]
+    ωmin ≤ ω₀ ≤ ωmax || @error "ω₀ = $ω₀ should be within range of ω."
+
+    # Convert the units of dm's quantities to the SI units.
+    ω₀ *= unit.ω
+    ωmin *= unit.ω
+    ωmax *= unit.ω
+    Nω = length(ω)
+
+    # Construct Ω without catastrophic cancellation.
+    Ωmin, Ωmax = ωmin-ω₀, ωmax-ω₀
+    Ω = range(Ωmin, Ωmax, length=Nω)
+
+    return Ω
+end
+
 # The type of ω is limited to AbstractRange in order to avoid catastrophic cancellation in
 # Ω = ω .- ω₀.  Ω is constructed by range(ω[1]-ω₀, ω[end]-ω₀, length(ω)).
 const DispersiveMode{K,Kₑ,Kₘ,K₊₁,VR<:AbstractRange{<:Real}} = ParametrizedMode{K,Kₑ,Kₘ,1,K₊₁,NamedTuple{(:ω,),Tuple{VR}}}
@@ -61,27 +79,15 @@ end
 # The function is used after constructing dm by scan_param().
 function calc_disp(dm::DispersiveMode, ω₀::Real, unit::MaxwellUnit)
     # Convert the units of dm's quantities to the SI units.
-    ω₀ *= unit.ω
+    ω = dm.θ.ω
+    Ω = ω2Ω(ω, ω₀, unit)
     ω *= unit.ω  # ω is newly allocated because *= instead of .*= is used
-    ωmin, ωmax, Nω = ω[1], ω[end], length(ω)
 
     β = real.(dm.β) ./ unit.L  # β is newly allocated
-    neff = c₀ .* (β ./ ω)  # ω = c β = (c₀ / neff) β
-
-    # dm's E and H are normalized to have unit longitudinal energy flux, but the energy flux
-    # is in the units of unit.P, which is not 1.  Once E, H, and length in transverse
-    # dimension are multiplied by unit.E, unit.H, and unit.L, energy flux is multiplied by
-    # unit.P.  In order to normalize E and H in the SI units whose longitudinal energy flux
-    # is unit.P, we need to normalize both fields by the same factor, which is √unit.P.
-    E = dm.E .* (unit.E / √unit.P)  # E is newly allocated
-    H = dm.H .* (unit.H / √unit.P)  # H is newly allocated
-
-    # Prepare interpolation.
-    Ωmin, Ωmax = ωmin-ω₀, ωmax-ω₀
-    Ω = range(Ωmin, Ωmax, length=Nω)  # enforce uniform sampling
-    bc = "extrapolate"
+    neff = c₀ .* β ./ ω  # phase velocity is c = c₀ / neff = ω / β
 
     # Construct the interpolators for neff and β.
+    bc = "extrapolate"
     neff_fun = Spline1D(Ω, neff; bc)
     β_fun = Spline1D(Ω, β; bc)
 
