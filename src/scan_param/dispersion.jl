@@ -28,8 +28,8 @@ function DispersiveField(Ω::AbstractRange{<:Real},
     Fᵣ_fun = Array{Spline1D}(undef, sz_shp)
     Fᵢ_fun = Array{Spline1D}(undef, sz_shp)
     for ci = CI
-        Fᵣ_fun[ci] = Spline1D(Ω, real.(@view(F[:,ci])); bc)
-        Fᵢ_fun[ci] = Spline1D(Ω, imag.(@view(F[:,ci])); bc)
+        Fᵣ_fun[ci] = Spline1D(Ω, real.(α .* @view(F[:,ci])); bc)
+        Fᵢ_fun[ci] = Spline1D(Ω, imag.(α .* @view(F[:,ci])); bc)
     end
 
     return DispersiveField(Fᵣ_fun, Fᵢ_fun)
@@ -49,9 +49,11 @@ function (df::DispersiveField)(Ω::Real)
     return F
 end
 
-# Create interpolated quantities related to group velocity dispersion (GVD).  These
-# quantities are usually calculated around a specific frequency ω₀, which is provided to the
-# function.
+# Interpolate a given tuple of fields at Ω.
+(df::NTuple{N,DispersiveField})(Ω::Real) where {N} = ntuple(k->df[k](Ω), Val(N))
+
+# Create interpolated quantities related to dispersion.  These quantities are usually
+# calculated around a specific frequency ω₀, which is provided to the function.
 #
 # This often generates the final results for publication, so the outputs are described in
 # the SI units.
@@ -107,13 +109,13 @@ function calc_disp(dm::DispersiveMode, ω₀::Real, unit::MaxwellUnit)
     D = -ω.^2 .* β₂ ./ 2πc₀  # D = -(ω²/2πc₀) β₂
     D_fun = Spline1D(Ω, D; bc)
 
-    # Construct the interpolator for E and H.
-    dim_shp = SVec(ntuple(k->k+1, Val(K)))  # 2:K+1
-    sz_shp = size(E[1])[dim_shp]
-    CI = CartesianIndices(sz_shp)
-
-    E_fun = ntuple(k->DispersiveField(Ω,E[k]), Val(Kₑ))
-    H_fun = ntuple(k->DispersiveField(Ω,H[k]), Val(Kₘ))
+    # dm's E and H are normalized to have unit longitudinal energy flux, but the energy flux
+    # is in the units of unit.P, which is not 1.  Once E, H, and length in transverse
+    # dimension are multiplied by unit.E, unit.H, and unit.L, energy flux is multiplied by
+    # unit.P.  In order to normalize E and H in the SI units whose longitudinal energy flux
+    # is unit.P, we need to normalize both fields by the same factor, which is √unit.P.
+    E_fun = DispersiveField.(Ref(Ω), dm.E, α=unit.E/√unit.P)
+    H_fun = DispersiveField.(Ref(Ω), dm.H, α=unit.H/√unit.P)
 
     return (ω₀=ω₀, ω=ω, Ω=Ω, neff=neff_fun, β=β_fun, β₁=β₁_fun, β₂=β₂_fun, ∆β=∆β_fun, vg=vg_fun, D=D_fun, E=E_fun, H=H_fun)
 end
